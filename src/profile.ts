@@ -1,4 +1,4 @@
-import { IMap, ITermMap, IPrefixMap, IProfile, IDataFactory } from './rdf-interfaces';
+import { ITermMap, IPrefixMap, IProfile, IDataFactory } from './rdf-interfaces';
 import { PrefixMap } from './prefix-map';
 import { TermMap } from './term-map';
 import { Map } from './map';
@@ -44,11 +44,11 @@ export class Profile implements IProfile {
         this.factory = factory;
         return this;
     }
-    importProfile (profile: Profile, override: boolean = false): IProfile {
+    importProfile (profile: IProfile, override: boolean = false): IProfile {
         if (!this.factory || override) {
             this.factory = profile['factory'];
         }
-        const map = profile.map;
+        const map: ProfileMap = profile['map'];
         if (map) {
             const m = map.map;
             for (const key in m) {
