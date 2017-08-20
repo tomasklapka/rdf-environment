@@ -230,7 +230,6 @@ describe('Library rdf-environment', () => {
                     expect(data.name).to.equal('John');
                     expect(data.age).to.equal(42);
                 });
-
                 it('should set factory', () => {
                     const factory = { _testIdentifier: 42 };
                     profile.setFactory(factory);
@@ -246,6 +245,8 @@ describe('Library rdf-environment', () => {
                     otherProfile.setPrefix('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
                     otherProfile.setTerm('john', 'http://john.example.com/#id');
                     otherProfile.setTerm('me', 'http://example.com/profile/card#me');
+                    otherProfile.set('myData', 'myValue');
+                    otherProfile.set('myOtherData', 'myOtherValue');
                     profile.importProfile(otherProfile);
                     expect(profile.prefixes.get('foaf')).to.equal('http://xmlns.com/foaf/0.1/');
                     expect(profile.prefixes.get('rdf')).to.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
@@ -253,6 +254,8 @@ describe('Library rdf-environment', () => {
                     expect(profile.terms.get('me')).to.equal('http://example.com/#me');
                     expect(profile.terms.default).to.equal('http://default.example.com/#');
                     expect(profile.prefixes.default).to.equal('http://example.com/default-ns#');
+                    expect(profile.get('myData')['name']).to.equal('John');
+                    expect(profile.get('myOtherData')).to.equal('myOtherValue');
                 });
                 it('should import profile override', () => {
                     otherProfile.setTerm('jane', 'http://jane.example.com/#person');
@@ -264,6 +267,8 @@ describe('Library rdf-environment', () => {
                     expect(profile.terms.default).to.equal('http://other.default.example.com/#');
                     expect(profile.prefixes.default).to.equal('http://example.com/other-default-ns#');
                     expect(profile.terms.get('jane')).to.equal('http://jane.example.com/#person');
+                    expect(profile.get('myData')).to.equal('myValue');
+                    expect(profile.get('myOtherData')).to.equal('myOtherValue');
                 });
             });
             describe('RDFEnvironment', () => {
