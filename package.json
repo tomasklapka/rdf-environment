@@ -4,7 +4,8 @@
   "description": "RDF Environment, Profile and Maps as defined by: https://www.w3.org/TR/rdf-interfaces/#rdf-environment-interfaces",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "gulp compile",
+    "prepare": "gulp compile",
+    "prepublish": "gulp compile && mocha dist/test",
     "test": "mocha dist/test"
   },
   "author": {

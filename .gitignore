@@ -6,7 +6,6 @@ package-lock.json
 # Dependency directory
 node_modules
 typings
-dist
 
 # Optional npm cache directory
 .npm
