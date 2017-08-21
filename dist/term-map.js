@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const map_1 = require("./map");
-class TermMap extends map_1.Map {
+const _1 = require(".");
+class TermMap extends _1.Map {
     get(key) {
         if (!this._map[key] && this._default) {
             return this.default + key;

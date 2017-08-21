@@ -1,5 +1,4 @@
-import { Map } from './map';
-import { IMap, IPrefixMap } from './rdf-interfaces';
+import { Map, IMap, IPrefixMap, IStream } from '.';
 
 // This class is copied (and modified) from bergos'es https://github.com/rdf-ext/rdf-ext/blob/master/lib/PrefixMap.js
 export class PrefixMap extends Map implements IPrefixMap {
@@ -34,7 +33,7 @@ export class PrefixMap extends Map implements IPrefixMap {
     clone(): IMap {
         return (new PrefixMap()).addAll(this);
     }
-    import (stream) {
+    import(stream: IStream): Promise<IPrefixMap> {
         stream.on('prefix', (key, value) => {
             this._map[key] = value;
         });
@@ -45,7 +44,7 @@ export class PrefixMap extends Map implements IPrefixMap {
             return this;
         })
     }
-    export (stream) {
+    export(stream: IStream): IPrefixMap {
         for (const key in this._map) {
             stream.emit('prefix', key, this._map[key]);
         }

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "RDF Environment, Profile and Maps as defined by: https://www.w3.org/TR/rdf-interfaces/#rdf-environment-interfaces",
   "main": "dist/index.js",
-  "types": "typings.d.ts",
+  "types": "src/index.d.ts",
   "scripts": {
     "prepare": "gulp compile",
     "prepublish": "gulp compile && mocha dist/test",

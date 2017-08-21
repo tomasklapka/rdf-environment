@@ -1,15 +1,13 @@
-import { ITermMap, IPrefixMap, IProfile, IDataFactory } from './rdf-interfaces';
-import { PrefixMap } from './prefix-map';
-import { TermMap } from './term-map';
-import { Map } from './map';
+import { IMap, ITermMap, IPrefixMap, IProfile } from '.';
+import { Map, TermMap, PrefixMap } from '.';
 
-class ProfileMap extends Map {};
+class ProfileMap extends Map implements IMap {};
 
 export class Profile implements IProfile {
     readonly prefixes: IPrefixMap = new PrefixMap();
     readonly terms: ITermMap = new TermMap();
     readonly _map = new ProfileMap();
-    constructor(public factory?: IDataFactory) {}
+    get map(): ProfileMap { return this._map; }
     set(term: string, value: any): IProfile {
         this._map.set(term, value);
         return this;
@@ -17,7 +15,6 @@ export class Profile implements IProfile {
     get(term: string): any {
         return this._map.get(term);
     }
-    get map(): ProfileMap { return this._map; }
     resolve(toresolve: string): string {
         if (toresolve.indexOf(':') !== -1) {
             return this.prefixes.resolve(toresolve);
@@ -40,14 +37,7 @@ export class Profile implements IProfile {
         this.prefixes.set(prefix, iri);
         return this;
     }
-    setFactory(factory: IDataFactory): IProfile {
-        this.factory = factory;
-        return this;
-    }
     importProfile (profile: IProfile, override: boolean = false): IProfile {
-        if (!this.factory || override) {
-            this.factory = profile['factory'];
-        }
         const map: ProfileMap = profile['map'];
         if (map) {
             const m = map.map;

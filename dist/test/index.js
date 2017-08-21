@@ -2,44 +2,44 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = require("chai");
 const events_1 = require("events");
-const rdf_environment = require("..");
+const rdfE = require("..");
+const __1 = require("..");
 const libs = {
-    'none': undefined,
+    'none': null,
     'rdflib': require('rdflib'),
     'rdf-ext': require('rdf-ext')
 };
-for (const lib in libs) {
-    libs[lib] = rdf_environment(libs[lib]);
-}
 describe('Library rdf-environment', () => {
     for (const lib in libs) {
-        describe('Mixed into ' + lib, () => {
-            const rdf = libs[lib];
-            let defaults = rdf;
-            if (lib === 'rdf-ext') {
-                defaults = rdf.defaults;
+        describe('Using "' + lib + '" library', () => {
+            const rdf = new __1.RDFEnvironment();
+            if (lib !== 'none') {
+                rdf.use(libs[lib]);
             }
+            const factory = rdf.factory;
             it('should have added functions', () => {
-                chai_1.expect(typeof rdf.environment).to.equal('function');
-                chai_1.expect(typeof rdf.setEnvironment).to.equal('function');
                 if (lib === 'rdf-ext') {
-                    chai_1.expect(typeof rdf).to.be.equal('function');
+                    chai_1.expect(typeof rdf.lib).to.be.equal('function');
                 }
                 else {
-                    chai_1.expect(typeof rdf).to.be.equal('object');
+                    chai_1.expect(typeof rdf.lib).to.be.equal('object');
                 }
-                chai_1.expect(typeof defaults.TermMap).to.equal('function');
-                chai_1.expect(typeof defaults.PrefixMap).to.equal('function');
-                chai_1.expect(typeof defaults.Profile).to.equal('function');
-                chai_1.expect(typeof defaults.RDFEnvironment).to.equal('function');
+                chai_1.expect(typeof rdfE.Map).to.equal('function');
+                chai_1.expect(typeof rdfE.TermMap).to.equal('function');
+                chai_1.expect(typeof rdfE.PrefixMap).to.equal('function');
+                chai_1.expect(typeof rdfE.Profile).to.equal('function');
+                chai_1.expect(typeof rdfE.RDFEnvironment).to.equal('function');
+            });
+            it('should detect library as DataFactory or null', () => {
+                chai_1.expect(rdf.factory).to.equal(libs[lib]);
             });
             it('should detect extended library', () => {
-                chai_1.expect(rdf.extendeeName()).to.equal(lib);
+                chai_1.expect(rdf.using).to.equal(lib);
             });
             describe('TermMap', () => {
                 let map = null;
                 it('should create new TermMap', () => {
-                    map = new defaults.TermMap();
+                    map = new __1.TermMap();
                     chai_1.expect(typeof map).to.equal('object');
                     chai_1.expect(typeof map.map).to.equal('object');
                     chai_1.expect(typeof map.resolve).to.equal('function');
@@ -63,7 +63,7 @@ describe('Library rdf-environment', () => {
                     chai_1.expect(map.get('me')).to.equal('http://example.com/#me');
                 });
                 it('should add multiple terms', () => {
-                    const terms = new defaults.TermMap();
+                    const terms = new __1.TermMap();
                     terms.set('john', 'http://john.example.com/#id');
                     terms.set('jane', 'http://jane.example.com/#person');
                     map.addAll(terms);
@@ -104,8 +104,22 @@ describe('Library rdf-environment', () => {
             });
             describe('PrefixMap', () => {
                 let map = null;
+                class StreamMock extends events_1.EventEmitter {
+                    constructor() {
+                        super(...arguments);
+                        this.readable = null;
+                        this.end = null;
+                        this.error = null;
+                        this.data = null;
+                        this.prefix = null;
+                    }
+                    read() {
+                        return null;
+                    }
+                }
+                const stream = new StreamMock();
                 it('should create new PrefixMap', () => {
-                    map = new defaults.PrefixMap();
+                    map = new __1.PrefixMap();
                     chai_1.expect(typeof map).to.equal('object');
                     chai_1.expect(typeof map.resolve).to.equal('function');
                     chai_1.expect(typeof map.shrink).to.equal('function');
@@ -127,7 +141,7 @@ describe('Library rdf-environment', () => {
                     chai_1.expect(map.get('foaf')).to.equal('http://xmlns.com/foaf/0.1/');
                 });
                 it('should add multiple prefixes', () => {
-                    const prefixes = new defaults.PrefixMap();
+                    const prefixes = new __1.PrefixMap();
                     prefixes.set('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
                     prefixes.set('acl', 'http://www.w3.org/ns/auth/acl#');
                     map.addAll(prefixes);
@@ -168,8 +182,7 @@ describe('Library rdf-environment', () => {
                     chai_1.expect(map.resolve('rdf:type')).to.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
                 });
                 it('should import from a stream', () => {
-                    const stream = new events_1.EventEmitter();
-                    const prefixes = new defaults.PrefixMap();
+                    const prefixes = new __1.PrefixMap();
                     const result = prefixes.import(stream).then(() => {
                         chai_1.expect(prefixes.get('foaf')).to.equal('http://xmlns.com/foaf/0.1/');
                         chai_1.expect(prefixes.get('rdf')).to.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
@@ -180,8 +193,7 @@ describe('Library rdf-environment', () => {
                     return result;
                 });
                 it('should export prefixes to a stream', () => {
-                    const stream = new events_1.EventEmitter();
-                    const prefixes = new defaults.PrefixMap();
+                    const prefixes = new __1.PrefixMap();
                     prefixes.set('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
                     prefixes.set('acl', 'http://www.w3.org/ns/auth/acl#');
                     const result = {};
@@ -202,7 +214,7 @@ describe('Library rdf-environment', () => {
                 let profile = null;
                 let otherProfile = null;
                 it('should create new Profile', () => {
-                    profile = new defaults.Profile(rdf);
+                    profile = new __1.Profile();
                     chai_1.expect(typeof profile).to.equal('object');
                     chai_1.expect(typeof profile.resolve).to.equal('function');
                     chai_1.expect(typeof profile.importProfile).to.equal('function');
@@ -230,15 +242,8 @@ describe('Library rdf-environment', () => {
                     chai_1.expect(data.name).to.equal('John');
                     chai_1.expect(data.age).to.equal(42);
                 });
-                it('should set factory', () => {
-                    const factory = { _testIdentifier: 42 };
-                    profile.setFactory(factory);
-                    chai_1.expect(profile.factory._testIdentifier).to.equal(42);
-                    profile.setFactory(null);
-                    chai_1.expect(profile.factory).to.equals(null);
-                });
                 it('should import profile', () => {
-                    otherProfile = new defaults.Profile(rdf);
+                    otherProfile = new __1.Profile();
                     otherProfile.setDefaultVocabulary('http://other.default.example.com/#');
                     otherProfile.setDefaultPrefix('http://example.com/other-default-ns#');
                     otherProfile.setPrefix('foaf', 'http://localhost/ns/foaf/');
@@ -274,12 +279,8 @@ describe('Library rdf-environment', () => {
             describe('RDFEnvironment', () => {
                 let dflt = null;
                 let env = null;
-                it('should be possible to get default environment from the lib', () => {
-                    dflt = rdf.environment();
-                    chai_1.expect(dflt).to.equal(rdf._defaultEnvironment);
-                });
                 it('should be possible to create a new environment', () => {
-                    env = new defaults.RDFEnvironment(rdf);
+                    env = new __1.RDFEnvironment();
                     chai_1.expect(typeof env).to.equal('object');
                     chai_1.expect(typeof env.createLiteral).to.equal('function');
                     chai_1.expect(typeof env.createTriple).to.equal('function');
@@ -298,25 +299,38 @@ describe('Library rdf-environment', () => {
                 it('should create an empty new PrefixMap', () => {
                     const empty = env.createPrefixMap(true);
                     chai_1.expect(Object.keys(empty.map).length).to.equal(0);
+                    const empty2 = env.prefixMap(true);
+                    chai_1.expect(Object.keys(empty2.map).length).to.equal(0);
                 });
                 it('should create a copy of the env\'s PrefixMap', () => {
                     const copy = env.createPrefixMap();
                     chai_1.expect(Object.keys(copy.map).length).to.equal(1);
                     chai_1.expect(Object.keys(copy.map).length).to.equal(Object.keys(env.prefixes.map).length);
+                    const copy2 = env.prefixMap();
+                    chai_1.expect(Object.keys(copy2.map).length).to.equal(1);
+                    chai_1.expect(Object.keys(copy2.map).length).to.equal(Object.keys(env.prefixes.map).length);
                 });
                 it('should create an empty new TermMap', () => {
                     const empty = env.createTermMap(true);
                     chai_1.expect(Object.keys(empty.map).length).to.equal(0);
+                    const empty2 = env.termMap(true);
+                    chai_1.expect(Object.keys(empty2.map).length).to.equal(0);
                 });
                 it('should create a copy of the env\'s TermMap', () => {
                     const copy = env.createTermMap();
                     chai_1.expect(Object.keys(copy.map).length).to.equal(1);
                     chai_1.expect(Object.keys(copy.map).length).to.equal(Object.keys(env.terms.map).length);
+                    const copy2 = env.termMap();
+                    chai_1.expect(Object.keys(copy2.map).length).to.equal(1);
+                    chai_1.expect(Object.keys(copy2.map).length).to.equal(Object.keys(env.terms.map).length);
                 });
                 it('should create an empty new Profile', () => {
                     const empty = env.createProfile(true);
                     chai_1.expect(Object.keys(empty.prefixes.map).length).to.equal(0);
                     chai_1.expect(Object.keys(empty.terms.map).length).to.equal(0);
+                    const empty2 = env.profile(true);
+                    chai_1.expect(Object.keys(empty2.prefixes.map).length).to.equal(0);
+                    chai_1.expect(Object.keys(empty2.terms.map).length).to.equal(0);
                 });
                 it('should create a copy of the env\'s TermMap', () => {
                     const copy = env.createProfile();
@@ -324,29 +338,33 @@ describe('Library rdf-environment', () => {
                     chai_1.expect(Object.keys(copy.terms.map).length).to.equal(1);
                     chai_1.expect(Object.keys(copy.prefixes.map).length).to.equal(Object.keys(env.prefixes.map).length);
                     chai_1.expect(Object.keys(copy.terms.map).length).to.equal(Object.keys(env.terms.map).length);
+                    const copy2 = env.createProfile();
+                    chai_1.expect(Object.keys(copy2.prefixes.map).length).to.equal(1);
+                    chai_1.expect(Object.keys(copy2.terms.map).length).to.equal(1);
+                    chai_1.expect(Object.keys(copy2.prefixes.map).length).to.equal(Object.keys(env.prefixes.map).length);
+                    chai_1.expect(Object.keys(copy2.terms.map).length).to.equal(Object.keys(env.terms.map).length);
                 });
-                if (rdf['blankNode']) {
+                if (lib !== 'none') {
                     it('should be possible create a blank node', () => {
-                        chai_1.expect(env.createBlankNode().termType).to.equal('BlankNode');
+                        chai_1.expect(rdf.createBlankNode().termType).to.equal('BlankNode');
+                        chai_1.expect(rdf.blankNode().termType).to.equal('BlankNode');
                     });
-                }
-                if (rdf['namedNode']) {
                     it('should be possible create a named node', () => {
-                        const nn = env.createNamedNode('http://localhost/ns/');
+                        const nn = rdf.createNamedNode('http://localhost/ns/');
+                        const nn2 = rdf.namedNode('http://localhost/ns/');
+                        chai_1.expect(nn.equals(nn2)).to.be.true;
                         chai_1.expect(nn.termType).to.equal('NamedNode');
                         chai_1.expect(nn.value).to.equal('http://localhost/ns/');
                     });
-                }
-                if (rdf['literal']) {
                     it('should be possible create a literal', () => {
-                        const customType = env.createNamedNode('http://localhost/some/datatype');
-                        const stringType = env.createNamedNode('http://www.w3.org/2001/XMLSchema#string');
-                        const langStringType = env.createNamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
-                        const literal1 = env.createLiteral('value1');
-                        const literal2 = env.createLiteral('value2', 'cs');
-                        const literal3 = env.createLiteral('value3', null, customType);
-                        const literal4 = env.createLiteral(4);
-                        const literal5 = env.createLiteral('value5', 'sk', customType);
+                        const customType = rdf.createNamedNode('http://localhost/some/datatype');
+                        const stringType = rdf.createNamedNode('http://www.w3.org/2001/XMLSchema#string');
+                        const langStringType = rdf.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
+                        const literal1 = rdf.createLiteral('value1');
+                        const literal2 = rdf.createLiteral('value2', 'cs');
+                        const literal3 = rdf.createLiteral('value3', null, customType);
+                        const literal4 = rdf.literal('4', null);
+                        const literal5 = rdf.createLiteral('value5', 'sk', customType);
                         chai_1.expect(literal1.termType).to.equal('Literal');
                         chai_1.expect(literal2.termType).to.equal('Literal');
                         chai_1.expect(literal3.termType).to.equal('Literal');
@@ -355,7 +373,7 @@ describe('Library rdf-environment', () => {
                         chai_1.expect(literal1.value).to.equal('value1');
                         chai_1.expect(literal2.value).to.equal('value2');
                         chai_1.expect(literal3.value).to.equal('value3');
-                        chai_1.expect(literal4.value).to.equal(4);
+                        chai_1.expect(literal4.value).to.equal('4');
                         chai_1.expect(literal5.value).to.equal('value5');
                         chai_1.expect(literal1.language).to.equal('');
                         chai_1.expect(literal2.language).to.equal('cs');
@@ -368,22 +386,50 @@ describe('Library rdf-environment', () => {
                         chai_1.expect(literal4.datatype.equals(stringType)).to.be.true;
                         chai_1.expect(literal5.datatype.equals(langStringType)).to.be.true;
                     });
-                }
-                if (rdf['triple']) {
                     it('should be possible create a triple', () => {
-                        const t = env.createTriple(env.createNamedNode('http://example.com/#me'), env.createNamedNode('http://xmlns.com/foaf/0.1/knows'), env.createNamedNode('http://john.example.com/#id'));
+                        const t = rdf.createTriple(rdf.createNamedNode('http://example.com/#me'), rdf.createNamedNode('http://xmlns.com/foaf/0.1/knows'), rdf.createNamedNode('http://john.example.com/#id'));
+                        const t2 = rdf.triple(rdf.namedNode('http://example.com/#me'), rdf.namedNode('http://xmlns.com/foaf/0.1/knows'), rdf.namedNode('http://john.example.com/#id'));
+                        chai_1.expect(t.equals(t2)).to.be.true;
                         chai_1.expect(t.subject.value).to.equal('http://example.com/#me');
                         chai_1.expect(t.predicate.value).to.equal('http://xmlns.com/foaf/0.1/knows');
                         chai_1.expect(t.object.value).to.equal('http://john.example.com/#id');
                     });
-                }
-                if (rdf['quad']) {
                     it('should be possible create a quad', () => {
-                        const q = env.createQuad(env.createNamedNode('http://example.com/#me'), env.createNamedNode('http://xmlns.com/foaf/0.1/knows'), env.createNamedNode('http://john.example.com/#id'), env.createNamedNode('http://example.com/kb1'));
+                        const q = rdf.createQuad(rdf.createNamedNode('http://example.com/#me'), rdf.createNamedNode('http://xmlns.com/foaf/0.1/knows'), rdf.createNamedNode('http://john.example.com/#id'), rdf.createNamedNode('http://example.com/kb1'));
+                        const q2 = rdf.quad(rdf.namedNode('http://example.com/#me'), rdf.namedNode('http://xmlns.com/foaf/0.1/knows'), rdf.namedNode('http://john.example.com/#id'), rdf.namedNode('http://example.com/kb1'));
                         chai_1.expect(q.subject.value).to.equal('http://example.com/#me');
                         chai_1.expect(q.predicate.value).to.equal('http://xmlns.com/foaf/0.1/knows');
                         chai_1.expect(q.object.value).to.equal('http://john.example.com/#id');
                         chai_1.expect(q.graph.value).to.equal('http://example.com/kb1');
+                    });
+                }
+                else {
+                    it('should throw error when used factory method without factory', () => {
+                        chai_1.expect(() => { rdf.createBlankNode(); }).to.throw();
+                        chai_1.expect(() => { rdf.createNamedNode('hptt://localhost/ns/'); }).to.throw();
+                        chai_1.expect(() => { rdf.createLiteral('value1'); }).to.throw();
+                        chai_1.expect(() => { rdf.blankNode(); }).to.throw();
+                        chai_1.expect(() => { rdf.namedNode('hptt://localhost/ns/'); }).to.throw();
+                        chai_1.expect(() => { rdf.literal('value1', null); }).to.throw();
+                        class NamedNodeMock {
+                            constructor(value) {
+                                this.value = value;
+                                this.termType = 'NamedNode';
+                            }
+                            equals(otherTerm) { return true; }
+                        }
+                        chai_1.expect(() => {
+                            rdf.createTriple(new NamedNodeMock('http://example.com/#me'), new NamedNodeMock('http://xmlns.com/foaf/0.1/knows'), new NamedNodeMock('http://john.example.com/#id'));
+                        }).to.throw();
+                        chai_1.expect(() => {
+                            rdf.triple(new NamedNodeMock('http://example.com/#me'), new NamedNodeMock('http://xmlns.com/foaf/0.1/knows'), new NamedNodeMock('http://john.example.com/#id'));
+                        }).to.throw();
+                        chai_1.expect(() => {
+                            rdf.createQuad(new NamedNodeMock('http://example.com/#me'), new NamedNodeMock('http://xmlns.com/foaf/0.1/knows'), new NamedNodeMock('http://john.example.com/#id'), new NamedNodeMock('http://example.com/kb1'));
+                        }).to.throw();
+                        chai_1.expect(() => {
+                            rdf.quad(new NamedNodeMock('http://example.com/#me'), new NamedNodeMock('http://xmlns.com/foaf/0.1/knows'), new NamedNodeMock('http://john.example.com/#id'), new NamedNodeMock('http://example.com/kb1'));
+                        }).to.throw();
                     });
                 }
             });

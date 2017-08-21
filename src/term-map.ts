@@ -1,5 +1,4 @@
-import { Map } from './map';
-import { IMap, ITermMap } from './rdf-interfaces';
+import { Map, IMap, ITermMap } from '.';
 
 export class TermMap extends Map implements ITermMap {
     get(key: string): any {

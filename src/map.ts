@@ -1,4 +1,4 @@
-import { IMap } from './rdf-interfaces';
+import { IMap } from '.';
 
 // abstract class for TermMap, PrefixMap and other maps
 export abstract class Map implements IMap {

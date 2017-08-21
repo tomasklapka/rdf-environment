@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const map_1 = require("./map");
+const _1 = require(".");
 // This class is copied (and modified) from bergos'es https://github.com/rdf-ext/rdf-ext/blob/master/lib/PrefixMap.js
-class PrefixMap extends map_1.Map {
+class PrefixMap extends _1.Map {
     set(key, value) {
         if (/[\s]/.test(key))
             throw new Error('PrefixMap\'s term cannot contain white space.');
