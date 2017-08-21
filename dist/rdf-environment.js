@@ -11,7 +11,6 @@ class RDFEnvironment extends profile_1.Profile {
         this._libName = 'none';
         this._lib = null;
         this._factory = null;
-        this.interfaces = require('./interfaces');
     }
     // getters
     get using() { return this._libName; }
@@ -42,72 +41,6 @@ class RDFEnvironment extends profile_1.Profile {
             if (plugin['defaults'] && plugin['defaults']['Dataset'] && plugin['waitFor']) {
                 this._libName = 'rdf-ext';
                 this._lib = plugin;
-            }
-            else {
-                // else try to load as the actual plugin
-                this.plugin(plugin);
-            }
-        }
-        return this;
-    }
-    /*
-     * Basic plugin mechanism for adding new types into RDFEnvironment library and adding new methods to all types
-     * plugin object structure:
-     *  'RDFEnvironmentPlugin': {
-     *      'types': {
-     *          'NewType1': NewType1,
-     *          'NewType2': NewType2
-     *      },
-     *      'extend': { // adding prototype methods into existing types. Use extendClass for adding class methods
-     *          'RDFEnvironment': {
-     *              createNewType1: (value) -> {
-     *                  return new NewType1(value);
-     *              }
-     *              createNewType2: (value) -> {
-     *                  return new NewType2(value);
-     *              }
-     *          }
-     *      }
-     * }
-     * override = true will overwrite existing types or methods
-     */
-    plugin(plugin, override = false) {
-        // not a plugin if missing meta property
-        plugin = plugin['plugin'] || plugin;
-        const meta = plugin['RDFEnvironmentPlugin'];
-        if (!meta) {
-            return this;
-        }
-        // add new types
-        if (meta.types) {
-            for (const _type in meta.types) {
-                if (!this[_type] || override) {
-                    this[_type] = meta.types[_type];
-                }
-            }
-        }
-        // extend prototype methods
-        if (meta.extend) {
-            for (const _extendedClass in meta.extend) {
-                const newProps = meta.extend[_extendedClass];
-                const extendee = this[_extendedClass];
-                for (const prop in newProps) {
-                    if (!extendee.prototype[prop] || override) {
-                        extendee.prototype[prop] = newProps.prototype[prop];
-                    }
-                }
-            }
-        }
-        // extend class methods
-        if (meta.extendClass) {
-            for (const _extendedClass in meta.extendClass) {
-                const newProps = meta.extendClass[_extendedClass];
-                const extendee = this[_extendedClass];
-                for (const prop in newProps) {
-                    if (!extendee[prop] || override) {
-                        extendee[prop] = newProps[prop];
-                    }
-                }
             }
         }
         return this;
